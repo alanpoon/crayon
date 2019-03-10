@@ -5,7 +5,7 @@ use super::mouse::MouseButton;
 use super::touchpad::TouchState;
 
 /// Input device event, supports mouse and keyboard only.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum InputEvent {
     /// The cursor has moved on the window.
     /// The parameter are the (x, y) coords in pixels relative to the bottom-left
@@ -39,4 +39,8 @@ pub enum InputEvent {
         state: TouchState,
         position: Vector2<f32>,
     },
+    TextEdit{
+        id:String,
+        value:String
+    }
 }

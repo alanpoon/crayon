@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{
-    self, Document, Element, HtmlCanvasElement, KeyboardEvent, MouseEvent, Node, UiEvent, Window,
+    self, Document, Element, HtmlCanvasElement, HtmlInputElement, KeyboardEvent, MouseEvent, Node, UiEvent, Window,
 };
 
 use crate::input::prelude::{InputEvent, MouseButton};
@@ -64,7 +64,7 @@ impl WebVisitor {
             .unwrap();
 
         let events = Arc::new(Mutex::new(Vec::new()));
-
+        
         let on_mouse_down = {
             let clone = events.clone();
             Closure::wrap(Box::new(move |v: MouseEvent| {
@@ -192,7 +192,40 @@ impl WebVisitor {
         canvas
             .add_event_listener_with_callback("resize", on_resize.as_ref().unchecked_ref())
             .unwrap();
-
+        for i in 0..10{
+            let input = document
+            .create_element("input")
+            .unwrap()
+            .dyn_into::<HtmlInputElement>()
+            .map_err(|_| ())
+            .unwrap();
+            let id = "textedit_".to_owned() + &i.to_string();
+            input
+            .unchecked_ref::<Element>()
+            .set_attribute("id", &id)
+            .unwrap();
+            AsRef::<Node>::as_ref(&body)
+            .append_child(input.as_ref())
+            .unwrap();
+            let on_change = {
+                let clone = events.clone();
+                Closure::wrap(Box::new(move || {
+                    let window = web_sys::window().expect("no global `window` exists");
+                    let document = window.document();
+                    let input = document.unwrap().get_element_by_id(&id).unwrap().dyn_into::<HtmlInputElement>()
+                                .map_err(|_| ())
+                                .unwrap();
+                    let val = input.value();
+                    let evt = Event::InputDevice(InputEvent::TextEdit{id:i.to_string(),value:val});
+                    clone.lock().unwrap().push(evt);
+                    
+                    }) as Box<FnMut()>)
+            };
+            input
+            .add_event_listener_with_callback("change", on_change.as_ref().unchecked_ref())
+            .unwrap();
+        }
+        
         let visitor = WebVisitor {
             window: window,
             document: document,
@@ -206,6 +239,7 @@ impl WebVisitor {
             on_focus: on_focus,
             on_lost_focus: on_lost_focus,
             on_resize: on_resize,
+            
         };
 
         let dpr = visitor.device_pixel_ratio();
@@ -288,4 +322,5 @@ impl Visitor for WebVisitor {
     fn swap_buffers(&self) -> Result<()> {
         Ok(())
     }
+    
 }

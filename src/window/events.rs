@@ -22,7 +22,7 @@ pub enum WindowEvent {
 }
 
 /// The enumerations of all events that come from various kinds of user input.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Event {
     Window(WindowEvent),
     InputDevice(InputEvent),

@@ -7,6 +7,7 @@ use super::events::InputEvent;
 use super::keyboard::{Key, Keyboard};
 use super::mouse::{Mouse, MouseButton};
 use super::touchpad::{GesturePan, GestureTap, TouchPad, TouchState};
+use super::textedit::TextEdit;
 use super::InputParams;
 use crate::utils::hash::FastHashSet;
 use crate::math::prelude::Vector2;
@@ -25,12 +26,13 @@ struct InputState {
     mouse: RwLock<Mouse>,
     keyboard: RwLock<Keyboard>,
     touchpad: RwLock<TouchPad>,
+    textedit: RwLock<TextEdit>
 }
 
 impl EventListener for Arc<InputState> {
     fn on(&mut self, v: &Event) -> Result<(), failure::Error> {
-        if let Event::InputDevice(v) = *v {
-            match v {
+        if let Event::InputDevice(vn) = v {
+            match vn {
                 InputEvent::MouseMoved { position } => {
                     if self.touch_emulation_button.read().unwrap().is_some() {
                         self.touchpad.write().unwrap().on_touch(
@@ -40,12 +42,12 @@ impl EventListener for Arc<InputState> {
                         );
                     }
 
-                    self.mouse.write().unwrap().on_move(position)
+                    self.mouse.write().unwrap().on_move(*position)
                 }
 
                 InputEvent::MousePressed { button } => {
                     if self.touch_emulation {
-                        *self.touch_emulation_button.write().unwrap() = Some(button);
+                        *self.touch_emulation_button.write().unwrap() = Some(*button);
                         self.touchpad.write().unwrap().on_touch(
                             255,
                             TouchState::Start,
@@ -53,11 +55,11 @@ impl EventListener for Arc<InputState> {
                         );
                     }
 
-                    self.mouse.write().unwrap().on_button_pressed(button)
+                    self.mouse.write().unwrap().on_button_pressed(*button)
                 }
 
                 InputEvent::MouseReleased { button } => {
-                    if *self.touch_emulation_button.read().unwrap() == Some(button) {
+                    if *self.touch_emulation_button.read().unwrap() == Some(*button) {
                         *self.touch_emulation_button.write().unwrap() = None;
 
                         self.touchpad.write().unwrap().on_touch(
@@ -67,23 +69,23 @@ impl EventListener for Arc<InputState> {
                         );
                     }
 
-                    self.mouse.write().unwrap().on_button_released(button)
+                    self.mouse.write().unwrap().on_button_released(*button)
                 }
 
                 InputEvent::MouseWheel { delta } => {
-                    self.mouse.write().unwrap().on_wheel_scroll(delta)
+                    self.mouse.write().unwrap().on_wheel_scroll(*delta)
                 }
 
                 InputEvent::KeyboardPressed { key } => {
-                    self.keyboard.write().unwrap().on_key_pressed(key)
+                    self.keyboard.write().unwrap().on_key_pressed(*key)
                 }
 
                 InputEvent::KeyboardReleased { key } => {
-                    self.keyboard.write().unwrap().on_key_released(key)
+                    self.keyboard.write().unwrap().on_key_released(*key)
                 }
 
                 InputEvent::ReceivedCharacter { character } => {
-                    self.keyboard.write().unwrap().on_char(character)
+                    self.keyboard.write().unwrap().on_char(*character)
                 }
 
                 InputEvent::Touch {
@@ -91,7 +93,13 @@ impl EventListener for Arc<InputState> {
                     state,
                     position,
                 } => {
-                    self.touchpad.write().unwrap().on_touch(id, state, position);
+                    self.touchpad.write().unwrap().on_touch(*id, *state, *position);
+                }
+                InputEvent::TextEdit{
+                    id,
+                    value
+                } =>{
+                    self.textedit.write().unwrap().on((id.clone(),value.clone()));
                 }
             }
         }
@@ -126,6 +134,7 @@ impl InputSystem {
             mouse: RwLock::new(Mouse::new(setup.mouse)),
             keyboard: RwLock::new(Keyboard::new(setup.keyboard)),
             touchpad: RwLock::new(TouchPad::new(setup.touchpad)),
+            textedit: RwLock::new(TextEdit::new(setup.textedit))
         });
 
         InputSystem {
@@ -296,5 +305,10 @@ impl InputSystem {
     #[inline]
     pub fn finger_pan(&self) -> GesturePan {
         self.state.touchpad.read().unwrap().pan()
+    }
+    /// Gets the text edit.
+    #[inline]
+    pub fn text_edit(&self) -> FastHashSet<(String,String)> {
+        self.state.textedit.read().unwrap().downs()
     }
 }

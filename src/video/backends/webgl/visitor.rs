@@ -2,8 +2,8 @@ use std::cell::RefCell;
 
 use smallvec::SmallVec;
 use web_sys::{
-    self, HtmlCanvasElement, WebGlBuffer, WebGlFramebuffer, WebGlProgram, WebGlRenderbuffer,
-    WebGlShader, WebGlTexture, WebGlUniformLocation, WebGlVertexArrayObject,
+    self,CssStyleDeclaration, HtmlCanvasElement,HtmlCollection, WebGlBuffer, WebGlFramebuffer, WebGlProgram, WebGlRenderbuffer,
+    WebGlShader, WebGlTexture, WebGlUniformLocation, WebGlVertexArrayObject
 };
 
 use wasm_bindgen::JsCast;
@@ -130,6 +130,7 @@ struct WebGLState {
 
 pub struct WebGLVisitor {
     ctx: WebGL,
+    text_edit_ctx: HtmlCollection,
     state: WebGLState,
 
     capabilities: Capabilities,
@@ -174,10 +175,11 @@ impl WebGLVisitor {
         };
 
         Self::reset_render_state(&ctx, &mut state)?;
-
+        let text_edit_ctx  =document.get_elements_by_tag_name("input");
         Ok(WebGLVisitor {
             capabilities: Capabilities::new(&ctx)?,
             ctx: ctx,
+            text_edit_ctx:text_edit_ctx,
             state: state,
             surfaces: DataVec::new(),
             shaders: DataVec::new(),
@@ -1509,6 +1511,15 @@ impl WebGLVisitor {
         check(&ctx)
     }
 }
+/*
+impl WebGLVisitor{
+    unsafe fn update_text_edit(&self,id:&str,style:CssStyleDeclaration){
+        if let Some(e) = self.text_edit_ctx.get_with_name(id){
+            e.dy
+        }
+    }
+}
+*/
 
 unsafe fn check(ctx: &WebGL) -> Result<()> {
     match ctx.get_error() {

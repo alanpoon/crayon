@@ -171,11 +171,13 @@ pub mod events;
 pub mod keyboard;
 pub mod mouse;
 pub mod touchpad;
+pub mod textedit;
 
 pub mod prelude {
     pub use super::events::InputEvent;
     pub use super::keyboard::{Key, KeyboardParams};
     pub use super::mouse::{MouseButton, MouseParams};
+    pub use super::textedit::{TextEdit, TextEditParams};
     pub use super::touchpad::{GesturePan, GestureTap, TouchPadParams};
     pub use super::InputParams;
 }
@@ -192,6 +194,7 @@ use self::keyboard::{Key, KeyboardParams};
 use self::mouse::{MouseButton, MouseParams};
 use self::system::InputSystem;
 use self::touchpad::{GesturePan, GestureTap, TouchPadParams};
+use self::textedit::{TextEdit, TextEditParams};
 use crate::utils::hash::FastHashSet;
 
 /// The setup parameters of all supported input devices.
@@ -201,6 +204,7 @@ pub struct InputParams {
     pub keyboard: KeyboardParams,
     pub mouse: MouseParams,
     pub touchpad: TouchPadParams,
+    pub textedit: TextEditParams,
 }
 
 /// Setup the resource system.
@@ -375,6 +379,12 @@ pub fn finger_double_tap() -> GestureTap {
 #[inline]
 pub fn finger_pan() -> GesturePan {
     ctx().finger_pan()
+}
+
+/// Gets the textedit for wasm.
+#[inline]
+pub fn text_edit() -> FastHashSet<(String,String)> {
+    ctx().text_edit()
 }
 
 mod ins {
