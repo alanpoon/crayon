@@ -2,14 +2,13 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use crate::application::prelude::{LifecycleListener, LifecycleListenerHandle};
 use crate::errors::*;
-use crate::math::prelude::Vector2;
 use crate::utils::object_pool::ObjectPool;
 
 use super::backends::{self, Visitor};
 
-impl_handle!(ConnectionHandle);
+impl_handle!(EventListenerHandle);
 
-pub trait NetworkListener {
+pub trait EventListener {
     fn on(&mut self, v: &String) -> Result<()>;
 }
 
@@ -22,7 +21,7 @@ pub struct NetworkSystem {
 struct NetworkState {
     visitor: RwLock<Box<dyn Visitor>>,
     events: Mutex<Vec<String>>,
-    listeners: Mutex<ObjectPool<ConnectionHandle, Arc<Mutex<dyn NetworkListener>>>>,
+    listeners: Mutex<ObjectPool<EventListenerHandle, Arc<Mutex<dyn EventListener>>>>,
 }
 
 impl LifecycleListener for Arc<NetworkState> {
@@ -65,7 +64,7 @@ impl NetworkSystem {
         let state = Arc::new(NetworkState {
             listeners: Mutex::new(ObjectPool::new()),
             events: Mutex::new(Vec::new()),
-            visitor: RwLock::new(backends::new(params)?),
+            visitor: RwLock::new(backends::new()?),
         });
 
         let window = NetworkSystem {
@@ -76,18 +75,18 @@ impl NetworkSystem {
         Ok(window)
     }
     /// Creates a new `NetworkSystem` and initalize OpenGL context.
-    pub fn create_connection(self,String) -> Result<ConnectionHandle> {
-        let handle = self.state.listeners.write().unwrap().create(params);
+    pub fn create_connection(self,param:String) -> Result<EventListenerHandle> {
+        let handle = self.state.listeners.write().unwrap().create(param);
         Ok(handle)
     }
     /// Adds a event listener.
-    pub fn add_event_listener<T: NetworkListener + 'static>(&self, lis: T) -> ConnectionHandle {
+    pub fn add_event_listener<T: EventListener + 'static>(&self, lis: T) -> EventListenerHandle {
         let lis = Arc::new(Mutex::new(lis));
         self.state.listeners.lock().unwrap().create(lis)
     }
 
     /// Removes a event listener from window.
-    pub fn remove_event_listener(&self, handle: ConnectionHandle) {
+    pub fn remove_event_listener(&self, handle: EventListenerHandle) {
         self.state.listeners.lock().unwrap().free(handle);
     }
 

@@ -49,6 +49,7 @@ features = [
     'WebGlFramebuffer',
     'WebGlVertexArrayObject',
     'Window',
+    'WebSocket',
     'Performance',
     'XmlHttpRequest',
     'XmlHttpRequestResponseType',

@@ -3,7 +3,7 @@ use super::Connection;
 pub trait Visitor {
     unsafe fn create_connection(&mut self, params: String)
         -> Result<()>;
-    unsafe fn connections(&mut self) -> Vec<Connection>;
+    unsafe fn poll_events(&mut self,v:&mut Vec<String>);
 }
 
 #[cfg(not(target_arch = "wasm32"))]

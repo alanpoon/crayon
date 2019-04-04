@@ -2,6 +2,8 @@ mod system;
 
 mod backends;
 use self::system::NetworkSystem;
+use self::system::EventListener;
+use self::ins::{ctx, CTX};
 /// Setup the resource system.
 pub(crate) unsafe fn setup() {
     debug_assert!(CTX.is_null(), "duplicated setup of resource system.");
@@ -24,7 +26,7 @@ pub struct Connection{
 }
 /// Creates an connection
 #[inline]
-pub fn create_connection(params: String) -> Result<ConnectionHandle> {
+pub fn create_connection(params: String) -> Result<()> {
     ctx().create_connection(params)
 }
 /// list all connections
