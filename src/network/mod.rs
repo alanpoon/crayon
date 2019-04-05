@@ -1,9 +1,10 @@
 mod system;
-
 mod backends;
 use self::system::NetworkSystem;
-use self::system::EventListener;
+use self::system::{EventListener,EventListenerHandle};
 use self::ins::{ctx, CTX};
+use crate::errors::Result;
+
 /// Setup the resource system.
 pub(crate) unsafe fn setup() {
     debug_assert!(CTX.is_null(), "duplicated setup of resource system.");
@@ -21,19 +22,12 @@ pub(crate) unsafe fn discard() {
     CTX = std::ptr::null();
 }
 
-pub struct Connection{
-    message: String
-}
 /// Creates an connection
 #[inline]
 pub fn create_connection(params: String) -> Result<()> {
     ctx().create_connection(params)
 }
-/// list all connections
-#[inline]
-pub fn connections()-> Vec<Connection>{
-    ctx().connections()
-}
+
 /// Adds a event listener.
 pub fn attach<T: EventListener + 'static>(lis: T) -> EventListenerHandle {
     ctx().add_event_listener(lis)

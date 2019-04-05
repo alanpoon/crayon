@@ -1,9 +1,8 @@
-use super::Connection;
-
+use crate::errors::Result;
 pub trait Visitor {
-    unsafe fn create_connection(&mut self, params: String)
+    fn create_connection(&mut self, params: String)
         -> Result<()>;
-    unsafe fn poll_events(&mut self,v:&mut Vec<String>);
+    fn poll_events(&mut self,v:&mut Vec<String>);
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -11,7 +10,7 @@ pub mod tokio;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn new() -> Result<Box<Visitor>> {
-    let visitor = unsafe { self::tokio::visitor::TokioVisitor::new()? };
+    let visitor = self::tokio::visitor::TokioVisitor::new()?;
     Ok(Box::new(visitor))
 }
 
@@ -20,6 +19,6 @@ pub mod websys;
 
 #[cfg(target_arch = "wasm32")]
 pub fn new() -> Result<Box<Visitor>> {
-    let visitor = unsafe { websys::visitor::WebSysVisitor::new()? };
+    let visitor = websys::visitor::WebVisitor::new()?;
     Ok(Box::new(visitor))
 }

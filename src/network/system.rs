@@ -37,19 +37,11 @@ impl LifecycleListener for Arc<NetworkState> {
     }
 
     fn on_post_update(&mut self) -> crate::errors::Result<()> {
-        // Swaps the buffers in case of double or triple buffering.
-        //
-        // **Warning**: if you enabled vsync, this function will block until the next time the screen
-        // is refreshed. However drivers can choose to override your vsync settings, which means that
-        // you can't know in advance whether swap_buffers will block or not.
-        self.visitor.read().unwrap().swap_buffers()?;
         Ok(())
     }
 }
 impl EventListener for Arc<NetworkState> {
-    fn on(&mut self, v: &String) -> Result<(), failure::Error> {
-        self.
-
+    fn on(&mut self, _v: &String) -> Result<()> {
         Ok(())
     }
 }
@@ -59,25 +51,25 @@ impl Drop for NetworkSystem {
     }
 }
 
+#[allow(dead_code)]
 impl NetworkSystem {
-    pub fn new()-> Result<Self>{
+    pub fn new()-> Self{
         let state = Arc::new(NetworkState {
             listeners: Mutex::new(ObjectPool::new()),
             events: Mutex::new(Vec::new()),
-            visitor: RwLock::new(backends::new()?),
+            visitor: RwLock::new(backends::new().unwrap()),
         });
 
         let window = NetworkSystem {
             state: state.clone(),
             lis: crate::application::attach(state),
         };
-
-        Ok(window)
+        window
     }
     /// Creates a new `NetworkSystem` and initalize OpenGL context.
-    pub fn create_connection(self,param:String) -> Result<EventListenerHandle> {
-        let handle = self.state.listeners.write().unwrap().create(param);
-        Ok(handle)
+    pub fn create_connection(&self,param:String) -> Result<()> {
+        self.state.visitor.write().unwrap().create_connection(param).unwrap();
+        Ok(())
     }
     /// Adds a event listener.
     pub fn add_event_listener<T: EventListener + 'static>(&self, lis: T) -> EventListenerHandle {
