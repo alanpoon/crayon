@@ -7,6 +7,7 @@ use crate::errors::Result;
 
 /// Setup the resource system.
 pub(crate) unsafe fn setup() {
+    println!("setup");
     debug_assert!(CTX.is_null(), "duplicated setup of resource system.");
     let ctx = NetworkSystem::new();
     CTX = Box::into_raw(Box::new(ctx));
@@ -26,6 +27,16 @@ pub(crate) unsafe fn discard() {
 #[inline]
 pub fn create_connection(params: String) -> Result<()> {
     ctx().create_connection(params)
+}
+/// Get receive
+#[inline]
+pub fn receive() -> Vec<String>{
+    ctx().receive()
+}
+/// Get send
+#[inline]
+pub fn send(p:String){
+    ctx().send(p);
 }
 
 /// Adds a event listener.

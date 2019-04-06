@@ -71,6 +71,12 @@ impl NetworkSystem {
         self.state.visitor.write().unwrap().create_connection(param).unwrap();
         Ok(())
     }
+    pub fn receive(&self) ->Vec<String>{
+        self.state.events.lock().unwrap().clone()
+    }
+    pub fn send(&self,p:String){
+        self.state.visitor.write().unwrap().send(p);
+    }
     /// Adds a event listener.
     pub fn add_event_listener<T: EventListener + 'static>(&self, lis: T) -> EventListenerHandle {
         let lis = Arc::new(Mutex::new(lis));

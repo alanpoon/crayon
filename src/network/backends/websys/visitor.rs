@@ -9,14 +9,16 @@ use std::sync::{Arc, Mutex};
 #[allow(dead_code)]
 pub struct WebVisitor {
     connections:Vec<String>,
-    events: Arc<Mutex<Vec<String>>>
+    events: Arc<Mutex<Vec<String>>>,
+    ws: Option<WebSocket>
 }
 
 impl WebVisitor{
     pub fn new() -> Result<Self>{
         Ok(WebVisitor{
             connections: Vec::new(),
-            events: Arc::new(Mutex::new(Vec::new()))
+            events: Arc::new(Mutex::new(Vec::new())),
+            ws: None
         })
     }
 }
@@ -32,7 +34,8 @@ impl Visitor for WebVisitor{
                 clone.lock().unwrap().push(evt);
             }) as Box<FnMut(_)>)
         };
-        WebSocket::new(&param).unwrap().set_onmessage(Some(on_message.as_ref().unchecked_ref()));
+        self.ws = WebSocket::new(&param).unwrap();
+        self.ws.set_onmessage(Some(on_message.as_ref().unchecked_ref()));
         self.events = events;
         self.connections.push(param);
         }
@@ -42,5 +45,11 @@ impl Visitor for WebVisitor{
     fn poll_events(&mut self, v: &mut Vec<String>) {
         let mut events = self.events.lock().unwrap();
         v.extend(events.drain(..));
+    }
+    #[inline]
+    fn send(&mut self,v:String){
+        if let Some(ws) = self.ws{
+            ws.send_with_str(v);
+        }
     }
 }

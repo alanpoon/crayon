@@ -3,6 +3,7 @@ pub trait Visitor {
     fn create_connection(&mut self, params: String)
         -> Result<()>;
     fn poll_events(&mut self,v:&mut Vec<String>);
+    fn send(&mut self,v:String);
 }
 
 #[cfg(not(target_arch = "wasm32"))]

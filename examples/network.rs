@@ -2,7 +2,7 @@ extern crate crayon;
 
 use crayon::impl_vertex;
 use crayon::prelude::*;
-
+use crayon::network;
 impl_vertex! {
     Vertex {
         position => [Position; Float; 2; false],
@@ -161,7 +161,12 @@ impl LifecycleListener for Window {
         dc.set_uniform_variable("time", self.time);
         self.batch.draw(dc);
         self.batch.submit(surface)?;
-
+        let k = "ws://echo.websocket.org".to_owned();
+        println!("update");
+        network::create_connection(k).unwrap();
+        for e in network::receive(){
+            print!("e {:?}",e);
+        }
         self.time += 0.05;
         Ok(())
     }

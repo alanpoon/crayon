@@ -25,16 +25,15 @@ pub enum ConnectionError {
 pub struct TokioVisitor {
     connections:Vec<String>,
     proxy: (std::sync::mpsc::Sender<String>,std::sync::mpsc::Receiver<String>),
-    server_proxy: (mpsc::Sender<String>,mpsc::Receiver<String>),
-    events: Arc<Mutex<Vec<String>>>
+    server_proxy_tx: Arc<Mutex<mpsc::Sender<String>>>,
 }
 impl TokioVisitor{
     pub fn new() -> Result<Self>{
+        let (ss_tx,_ss_rx) = mpsc::channel::<String>(3);
         Ok(TokioVisitor{
             connections:Vec::new(),
             proxy: std::sync::mpsc::channel::<String>(),
-            server_proxy: mpsc::channel::<String>(3),
-            events:  Arc::new(Mutex::new(Vec::new()))
+            server_proxy_tx: Arc::new(Mutex::new(ss_tx))
         })
     }
 }
@@ -42,15 +41,19 @@ impl TokioVisitor{
 impl Visitor for TokioVisitor{
     #[inline]
     fn create_connection(&mut self,param:String)->Result<()>{
+        println!("param {:?}",param);
         if !self.connections.contains(&param){
-            let runtime = tokio::runtime::Builder::new().build().unwrap();
+            
+            let mut runtime = tokio::runtime::Builder::new().build().unwrap();
             let p = param.clone();
-            let f = future::join_all(vec![
-                future::ok::<std::sync::mpsc::Sender<String>,websocket::result::WebSocketError>(self.proxy.0.clone()),
-                future::ok::<std::sync::mpsc::Sender<String>,websocket::result::WebSocketError>(self.server_proxy.1),
-                ClientBuilder::new(&p).unwrap().async_connect_insecure()
-            ]);
-            let f = f.and_then(|(((duplex, _), gui_c),rx)| {
+            let (tx, rx) = mpsc::channel(3);
+            let mut ss_tx = self.server_proxy_tx.lock().unwrap();
+            *ss_tx = tx;
+            drop(ss_tx);
+            let runner = ClientBuilder::new(&p).unwrap().add_protocol("rust-websocket").async_connect_insecure()
+                .join3(future::ok::<std::sync::mpsc::Sender<String>,websocket::result::WebSocketError>(self.proxy.0.clone()),
+                future::ok::<mpsc::Receiver<String>,websocket::result::WebSocketError>(rx))
+                .and_then(|((duplex, _), gui_c,rx)| {
                 let (to_server, from_server) = duplex.split();
                 let reader = from_server.for_each(move |msg| {
                     // ... convert it to a string for display in the GUI...
@@ -71,7 +74,7 @@ impl Visitor for TokioVisitor{
             .map_err(|()| unreachable!("rx can't fail"))
             .fold(to_server, |to_server, msg| {
                 let h= msg.clone();
-                 to_server.send(h)
+                 to_server.send(OwnedMessage::Text(h))
             })
             .map(|_| ());
 
@@ -85,20 +88,25 @@ impl Visitor for TokioVisitor{
                     println!("connected");
                     let g = serde_json::to_string(&ConnectionStatus::Ok).unwrap();
                     self.proxy.0.clone().send(g).unwrap();
-                    Ok(())
                 }
                 Err(_er) => {
                     let g = serde_json::to_string(&ConnectionStatus::Error(ConnectionError::CannotFindServer)).unwrap();
                     self.proxy.0.clone().send(g).unwrap();
-                    Err(ConnectionError::CannotFindServer)
                 }
             }
         }
+        Ok(())
     }
 
     #[inline]
     fn poll_events(&mut self, v: &mut Vec<String>) {
-        let mut events = self.events.lock().unwrap();
-        self.proxy.1.iter().exends(events.drain(..));
+        for s in self.proxy.1.iter(){
+            v.push(s);
+        }
+    }
+    #[inline]
+    fn send(&mut self,v:String){
+        let j = self.server_proxy_tx.lock().unwrap();
+        j.clone().send(v).wait().unwrap();
     }
 }
