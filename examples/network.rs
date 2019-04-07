@@ -161,9 +161,12 @@ impl LifecycleListener for Window {
         dc.set_uniform_variable("time", self.time);
         self.batch.draw(dc);
         self.batch.submit(surface)?;
-        let k = "ws://echo.websocket.org".to_owned();
-        println!("update");
-        network::create_connection(k).unwrap();
+        let k = "ws://0.0.0.0:8080".to_owned();
+        network::create_connection(k.clone()).unwrap();
+        if self.time == 4.0{
+           // network::send(k);
+        }
+        
         for e in network::receive(){
             print!("e {:?}",e);
         }

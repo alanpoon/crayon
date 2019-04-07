@@ -60,7 +60,6 @@ impl EngineSystem {
         crate::input::setup(params.input);
         crate::res::setup(params.res)?;
         crate::network::setup();
-
         let state = Arc::new(EngineState {
             alive: AtomicBool::new(true),
         });

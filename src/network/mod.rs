@@ -7,7 +7,6 @@ use crate::errors::Result;
 
 /// Setup the resource system.
 pub(crate) unsafe fn setup() {
-    println!("setup");
     debug_assert!(CTX.is_null(), "duplicated setup of resource system.");
     let ctx = NetworkSystem::new();
     CTX = Box::into_raw(Box::new(ctx));
