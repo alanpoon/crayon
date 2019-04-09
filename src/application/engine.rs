@@ -42,6 +42,7 @@ impl Drop for EngineSystem {
             crate::video::discard();
             crate::window::discard();
             crate::sched::discard();
+            crate::network::discard();
         }
     }
 }
@@ -58,7 +59,7 @@ impl EngineSystem {
         crate::video::setup()?;
         crate::input::setup(params.input);
         crate::res::setup(params.res)?;
-
+        crate::network::setup();
         let state = Arc::new(EngineState {
             alive: AtomicBool::new(true),
         });
@@ -82,7 +83,7 @@ impl EngineSystem {
         crate::video::headless();
         crate::input::setup(params.input);
         crate::res::setup(params.res)?;
-
+        crate::network::setup();
         let state = Arc::new(EngineState {
             alive: AtomicBool::new(false),
         });

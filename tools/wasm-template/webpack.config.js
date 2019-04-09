@@ -21,8 +21,12 @@ module.exports = {
     ],
     devServer: {
         contentBase: [__dirname, path.join(__dirname, '../..')],
+<<<<<<< HEAD
         inline:true,
         port: 8080
+=======
+        port: 3000
+>>>>>>> network
     },
     mode: 'development'
 };
