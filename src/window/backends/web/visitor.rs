@@ -192,6 +192,7 @@ impl WebVisitor {
         canvas
             .add_event_listener_with_callback("resize", on_resize.as_ref().unchecked_ref())
             .unwrap();
+        /*
         for i in 0..10{
             let input = document
             .create_element("input")
@@ -225,7 +226,7 @@ impl WebVisitor {
             .add_event_listener_with_callback("change", on_change.as_ref().unchecked_ref())
             .unwrap();
         }
-        
+        */
         let visitor = WebVisitor {
             window: window,
             document: document,
