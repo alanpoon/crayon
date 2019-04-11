@@ -58,9 +58,10 @@ impl Visitor for TokioVisitor{
             //let close = "close".to_stirng();
             
             std::thread::spawn(move|| {
-                std::thread::sleep(Duration::from_millis(500));
+                //std::thread::sleep(Duration::from_millis(500));
                 let mut runtime = tokio::runtime::Builder::new().build().unwrap();
-                let runner = ClientBuilder::new(&p).unwrap().add_protocol("rust-websocket").async_connect_insecure()
+                let runner = ClientBuilder::new(&p).unwrap().add_protocol("rust-websocket")
+                    .async_connect_insecure()
                     .join3(future::ok::<std::sync::mpsc::Sender<String>,websocket::result::WebSocketError>(proxy_0.clone()),
                     future::ok::<mpsc::Receiver<String>,websocket::result::WebSocketError>(rx))
                     .and_then(|((duplex, _), gui_c,rx)| {
@@ -99,6 +100,7 @@ impl Visitor for TokioVisitor{
                 // half. The `map` and `map_err` here effectively force this drop.
                 reader.select(writer).map(|_| ()).map_err(|(err, _)| err)
             });
+            /*
             match runtime.block_on(runner) { //block_on
                 Ok(_) => {
                     println!("connected");
@@ -110,7 +112,8 @@ impl Visitor for TokioVisitor{
                     let g = serde_json::to_string(&ConnectionStatus::Error(ConnectionError::CannotFindServer)).unwrap();
                     proxy_0.clone().send(g).unwrap();
                 }
-            }
+            }*/
+            runtime.block_on(runner).unwrap();
             });
             dbg!("after");
         }

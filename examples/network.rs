@@ -162,9 +162,10 @@ impl LifecycleListener for Window {
         self.batch.draw(dc);
         self.batch.submit(surface)?;
         let k = "ws://0.0.0.0:8080".to_owned();
+        //let k = "ws://0.0.0.0:8080".to_owned();
         network::create_connection(k.clone()).unwrap();
-        if self.time == 4.0{
-           // network::send(k);
+        if (self.time as i32) *10 % 10 ==4{
+            network::send(k);
         }
         
         for e in network::receive(){
