@@ -92,7 +92,7 @@ impl LifecycleListener for Window {
 
 main!({
     #[cfg(not(target_arch = "wasm32"))]
-    let res = format!("file://{}/examples/resources/", env!("CARGO_MANIFEST_DIR"));
+    let res = format!("file://{}/examples/resources/", env!("CARGO_MANIFEST_DIR").replace("\\","/"));
     #[cfg(target_arch = "wasm32")]
     let res = format!("http://localhost:8080/examples/resources/");
 
