@@ -77,15 +77,5 @@ impl NetworkSystem {
     pub fn send(&self,p:String){
         self.state.visitor.write().unwrap().send(p);
     }
-    /// Adds a event listener.
-    pub fn add_event_listener<T: EventListener + 'static>(&self, lis: T) -> EventListenerHandle {
-        let lis = Arc::new(Mutex::new(lis));
-        self.state.listeners.lock().unwrap().create(lis)
-    }
-
-    /// Removes a event listener from window.
-    pub fn remove_event_listener(&self, handle: EventListenerHandle) {
-        self.state.listeners.lock().unwrap().free(handle);
-    }
 
 }

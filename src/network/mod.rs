@@ -38,16 +38,6 @@ pub fn send(p:String){
     ctx().send(p);
 }
 
-/// Adds a event listener.
-pub fn attach<T: EventListener + 'static>(lis: T) -> EventListenerHandle {
-    ctx().add_event_listener(lis)
-}
-
-/// Removes a event listener from window.
-pub fn detach(handle: EventListenerHandle) {
-    ctx().remove_event_listener(handle)
-}
-
 mod ins {
     use super::system::NetworkSystem;
 
