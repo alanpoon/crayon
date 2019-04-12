@@ -161,7 +161,7 @@ impl LifecycleListener for Window {
         dc.set_uniform_variable("time", self.time);
         self.batch.draw(dc);
         self.batch.submit(surface)?;
-        let k = "ws://0.0.0.0:8080".to_owned();
+        let k = "ws://127.0.0.1:8080".to_owned();
         //let k = "ws://0.0.0.0:8080".to_owned();
         network::create_connection(k.clone()).unwrap();
         if (self.time as i32) *10 % 10 ==4{
