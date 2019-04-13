@@ -1,5 +1,5 @@
 [package]
-name = "crayon-bytes"
+name = "crayon_bytes"
 version = "0.7.1"
 authors = ["Jingkai Mao <oammix@gmail.com>"]
 description = "The bytes module of crayon game framework."
