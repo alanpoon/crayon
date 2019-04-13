@@ -30,7 +30,7 @@ impl ResourceLoader for BytesLoader {
     }
 
     fn create(&self, _: Self::Handle, item: Self::Intermediate) -> Result<Self::Resource> {
-        Ok(Arc::new(item))
+        Ok(item)
     }
 
     fn delete(&self, _: Self::Handle, _: Self::Resource) {}

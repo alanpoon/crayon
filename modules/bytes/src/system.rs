@@ -61,4 +61,8 @@ impl BytesSystem {
     pub fn state(&self, handle: BytesHandle) -> ResourceState {
         self.bytes.read().unwrap().state(handle)
     }
+    #[inline]
+    pub fn create_bytes(&self, handle: BytesHandle) -> Vec<u8>{
+        self.bytes.read().unwrap().create()
+    }
 }

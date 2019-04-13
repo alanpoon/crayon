@@ -35,6 +35,10 @@ pub fn create_bytes_from_uuid(uuid: Uuid) -> Result<BytesHandle> {
 pub fn state(handle: BytesHandle) -> ResourceState {
     ctx().state(handle)
 }
+#[inline]
+pub fn create_bytes(&self, handle: BytesHandle) -> Vec<u8>{
+    ctx().create_bytes(handle)
+}
 
 mod inside {
     use super::system::BytesSystem;
