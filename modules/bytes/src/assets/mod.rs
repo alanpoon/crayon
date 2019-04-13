@@ -1,7 +1,5 @@
-pub mod clip;
-pub mod clip_loader;
+pub mod bytes_loader;
 
 pub mod prelude {
-    pub use super::clip::{AudioClip, AudioClipHandle};
-    pub use super::clip_loader::AudioClipLoader;
+    pub use super::bytes_loader::{BytesLoader,BytesHandle};
 }

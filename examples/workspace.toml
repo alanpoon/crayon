@@ -31,3 +31,10 @@ extensions = [
     '.wav',
     '.ogg',
 ]
+
+[[assets.importers]]
+type = 'Bytes'
+extensions = [
+    '.ttf',
+    '.otf',
+]

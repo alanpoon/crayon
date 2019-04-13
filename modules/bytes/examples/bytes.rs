@@ -1,76 +1,51 @@
 extern crate crayon;
-extern crate crayon_audio;
+extern crate crayon_bytes;
 
 use crayon::prelude::*;
-use crayon_audio::prelude::*;
+use crayon_bytes::prelude::*;
+
 
 #[derive(Debug, Clone, Copy)]
 struct WindowResources {
-    sfx: AudioClipHandle,
-    music: AudioClipHandle,
-}
-
-impl LatchProbe for WindowResources {
-    fn is_set(&self) -> bool {
-        crayon_audio::clip_state(self.sfx) != ResourceState::NotReady
-            && crayon_audio::clip_state(self.music) != ResourceState::NotReady
-    }
+    b: BytesHandle,
 }
 
 impl WindowResources {
     pub fn new() -> CrResult<Self> {
-        crayon_audio::setup()?;
+        crayon_bytes::setup()?;
         Ok(WindowResources {
-            music: crayon_audio::create_clip_from("res:music.mp3")?,
-            sfx: crayon_audio::create_clip_from("res:sfx.ogg")?,
+            b: crayon_bytes::create_bytes_from("res:Oswald-Heavy.ttf")?,
+            //b: crayon_bytes::create_bytes_from("res:crate.bmp")?,
         })
+    }
+}
+impl LatchProbe for WindowResources {
+    fn is_set(&self) -> bool {
+        crayon_bytes::state(self.b) != ResourceState::NotReady
     }
 }
 
 struct Window {
     resources: WindowResources,
-    music_source: AudioSourceHandle,
-    music_volume: f32,
-    // music_pitch: f32,
 }
 
 impl Drop for Window {
     fn drop(&mut self) {
-        crayon_audio::delete_clip(self.resources.music);
-        crayon_audio::delete_clip(self.resources.sfx);
-        crayon_audio::discard();
+        crayon_bytes::discard();
     }
 }
 
 impl Window {
     fn new(resources: &WindowResources) -> CrResult<Self> {
-        let mut params = AudioSource::from(resources.music);
-        params.loops = AudioSourceWrap::Infinite;
 
         Ok(Window {
             resources: *resources,
-            music_source: crayon_audio::play(params)?,
-            music_volume: 1.0,
-            // music_pitch: 1.0,
         })
     }
 }
 
 impl LifecycleListener for Window {
     fn on_update(&mut self) -> CrResult<()> {
-        if input::is_key_down(Key::K) {
-            crayon_audio::play(self.resources.sfx)?;
-        }
-
-        if input::is_key_down(Key::Key1) {
-            self.music_volume += 0.1;
-            crayon_audio::set_volume(self.music_source, self.music_volume);
-        }
-
-        if input::is_key_down(Key::Key2) {
-            self.music_volume -= 0.1;
-            crayon_audio::set_volume(self.music_source, self.music_volume);
-        }
 
         Ok(())
     }
