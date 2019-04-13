@@ -62,7 +62,7 @@ impl BytesSystem {
         self.bytes.read().unwrap().state(handle)
     }
     #[inline]
-    pub fn create_bytes(&self, handle: BytesHandle) -> Vec<u8>{
-        self.bytes.read().unwrap().create()
+    pub fn create_bytes(&self, handle: BytesHandle) -> Option<Vec<u8>>{
+        self.bytes.read().unwrap().resource(handle).cloned()
     }
 }

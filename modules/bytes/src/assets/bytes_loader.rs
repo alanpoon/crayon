@@ -17,7 +17,7 @@ impl BytesLoader {
 impl ResourceLoader for BytesLoader {
     type Handle = BytesHandle;
     type Intermediate = Vec<u8>;
-    type Resource = Arc<Vec<u8>>;
+    type Resource = Vec<u8>;
 
     fn load(&self, _handle: Self::Handle, bytes: &[u8]) -> Result<Self::Intermediate> {
         let data = bytes.to_vec();
@@ -30,7 +30,7 @@ impl ResourceLoader for BytesLoader {
     }
 
     fn create(&self, _: Self::Handle, item: Self::Intermediate) -> Result<Self::Resource> {
-        Ok(item)
+        Ok(item.clone())
     }
 
     fn delete(&self, _: Self::Handle, _: Self::Resource) {}
