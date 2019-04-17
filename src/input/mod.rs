@@ -275,6 +275,10 @@ pub fn is_key_repeat(key: Key) -> bool {
     ctx().is_key_repeat(key)
 }
 
+#[inline]
+pub fn chars() -> Vec<char> {
+    ctx().chars()
+}
 /// Gets captured text during the last frame.
 #[inline]
 pub fn text() -> String {

@@ -264,8 +264,12 @@ impl Keyboard {
         if self.chars.len() < self.setup.max_chars {
             self.chars.push(c);
         }
+        println!("chars {:?}",self.chars.clone());
     }
-
+    #[inline]
+    pub fn chars(&self)->Vec<char>{
+        self.chars.clone()
+    }
     #[inline]
     pub fn is_key_down(&self, key: Key) -> bool {
         self.downs.contains_key(&key)

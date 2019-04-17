@@ -191,7 +191,10 @@ impl InputSystem {
     pub fn is_key_repeat(&self, key: Key) -> bool {
         self.state.keyboard.read().unwrap().is_key_repeat(key)
     }
-
+    #[inline]
+    pub fn chars(&self)->Vec<char>{
+        self.state.keyboard.read().unwrap().chars()
+    }
     /// Gets captured text during the last frame.
     #[inline]
     pub fn text(&self) -> String {
