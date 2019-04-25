@@ -490,11 +490,17 @@ pub mod macros {
     #[doc(hidden)]
     #[macro_export]
     macro_rules! impl_vertex_field {
+        (VertexFormat::Short,1) => {
+            i16
+        };
         (VertexFormat::UByte,1) => {
             u8
         };
         (VertexFormat::UShort,1) =>{
             u32
+        };
+        (VertexFormat::Float,1) =>{
+            f32
         };
         (VertexFormat::Byte,2) => {
             [i8; 2]
