@@ -480,15 +480,15 @@ impl Visitor for WebGLVisitor {
         if texture.params.format.compressed() {
             bail!("Trying to update compressed texture.");
         }
-
-        if data.len() > area.volume() as usize
+        let components = texture.params.format.components();
+        if (data.len() as f32 * (components as f32 /4.0)) as usize > area.volume() as usize
             || area.min.x >= texture.params.dimensions.x
             || area.min.y >= texture.params.dimensions.y
         {
             bail!("Trying to update texture data out of bounds.");
         }
-
-        let (internal_format, format, pixel_type) = texture.params.format.into();
+        
+        let (internal_format, format, pixel_type) = TextureFormat::RGBA8.into();
 
         Self::bind_texture(
             &self.ctx,
@@ -516,8 +516,17 @@ impl Visitor for WebGLVisitor {
 
             *texture.allocated.borrow_mut() = true;
         }
+        let mut new_data:Vec<u8> = vec![];
+        if components <4{
+            for j in data.to_vec(){
+                new_data.push(j);
+                for _z in components..4{
+                    new_data.push(0);
+                }
+            }
+        }
+        let mv = ::std::slice::from_raw_parts_mut(new_data.as_ptr() as *mut u8, new_data.len());
 
-        let mv = ::std::slice::from_raw_parts_mut(data.as_ptr() as *mut u8, data.len());
         self.ctx
             .tex_sub_image_2d_with_i32_and_i32_and_u32_and_type_and_opt_u8_array(
                 WebGL::TEXTURE_2D,

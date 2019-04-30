@@ -470,16 +470,17 @@ impl Visitor for GLVisitor {
         if texture.params.format.compressed() {
             bail!("Trying to update compressed texture.");
         }
+        let components = texture.params.format.components();
 
-        if data.len() > area.volume() as usize
+        if (data.len() as f32 * (components as f32 /4.0)) as usize > area.volume() as usize
             || area.min.x >= texture.params.dimensions.x
             || area.min.y >= texture.params.dimensions.y
         {
             bail!("Trying to update texture data out of bounds.");
         }
-
+        
         let (internal_format, format, pixel_type) =
-            types::texture_format(texture.params.format, &self.capabilities);
+            types::texture_format(TextureFormat::RGBA8, &self.capabilities);
 
         Self::bind_texture(
             &mut self.state,
@@ -490,7 +491,7 @@ impl Visitor for GLVisitor {
 
         if !*texture.allocated.borrow() {
             Self::bind_texture_params(texture.params.wrap, texture.params.filter, 1)?;
-
+            
             gl::TexImage2D(
                 gl::TEXTURE_2D,
                 0,
@@ -506,6 +507,17 @@ impl Visitor for GLVisitor {
             *texture.allocated.borrow_mut() = true;
         }
 
+        let mut new_data:Vec<u8> = vec![];
+        if components <4{
+            for j in data.to_vec(){
+                new_data.push(j);
+                for _z in components..4{
+                    new_data.push(0);
+                }
+            }
+        }
+        
+        let m = new_data.as_slice();
         gl::TexSubImage2D(
             gl::TEXTURE_2D,
             0,
@@ -515,7 +527,7 @@ impl Visitor for GLVisitor {
             area.dim().y as i32,
             format,
             pixel_type,
-            &data[0] as *const u8 as *const ::std::os::raw::c_void,
+            &m[0] as *const u8 as *const ::std::os::raw::c_void,
         );
 
         check()

@@ -94,7 +94,7 @@ main!({
     #[cfg(not(target_arch = "wasm32"))]
     let res = format!("file://{}/examples/resources/", env!("CARGO_MANIFEST_DIR").replace("\\","/"));
     #[cfg(target_arch = "wasm32")]
-    let res = format!("http://localhost:8080/examples/resources/");
+    let res = format!("/examples/resources/");
 
     let mut params = Params::default();
     params.window.title = "CR: Texture".into();
