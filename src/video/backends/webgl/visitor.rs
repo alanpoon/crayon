@@ -2,8 +2,8 @@ use std::cell::RefCell;
 
 use smallvec::SmallVec;
 use web_sys::{
-    self,CssStyleDeclaration, HtmlCanvasElement,HtmlCollection, WebGlBuffer, WebGlFramebuffer, WebGlProgram, WebGlRenderbuffer,
-    WebGlShader, WebGlTexture, WebGlUniformLocation, WebGlVertexArrayObject
+    self, HtmlCanvasElement, WebGlBuffer, WebGlFramebuffer, WebGlProgram, WebGlRenderbuffer,
+    WebGlShader, WebGlTexture, WebGlUniformLocation, WebGlVertexArrayObject,
 };
 
 use wasm_bindgen::JsCast;
@@ -130,7 +130,6 @@ struct WebGLState {
 
 pub struct WebGLVisitor {
     ctx: WebGL,
-    text_edit_ctx: HtmlCollection,
     state: WebGLState,
 
     capabilities: Capabilities,
@@ -175,11 +174,10 @@ impl WebGLVisitor {
         };
 
         Self::reset_render_state(&ctx, &mut state)?;
-        let text_edit_ctx  =document.get_elements_by_tag_name("input");
+
         Ok(WebGLVisitor {
             capabilities: Capabilities::new(&ctx)?,
             ctx: ctx,
-            text_edit_ctx:text_edit_ctx,
             state: state,
             surfaces: DataVec::new(),
             shaders: DataVec::new(),
@@ -480,15 +478,15 @@ impl Visitor for WebGLVisitor {
         if texture.params.format.compressed() {
             bail!("Trying to update compressed texture.");
         }
-        let components = texture.params.format.components();
-        if (data.len() as f32 * (components as f32 /4.0)) as usize > area.volume() as usize
+
+        if data.len() > texture.params.format.size(area.dim()) as usize
             || area.min.x >= texture.params.dimensions.x
             || area.min.y >= texture.params.dimensions.y
         {
             bail!("Trying to update texture data out of bounds.");
         }
-        
-        let (internal_format, format, pixel_type) = TextureFormat::RGBA8.into();
+
+        let (internal_format, format, pixel_type) = texture.params.format.into();
 
         Self::bind_texture(
             &self.ctx,
@@ -516,17 +514,8 @@ impl Visitor for WebGLVisitor {
 
             *texture.allocated.borrow_mut() = true;
         }
-        let mut new_data:Vec<u8> = vec![];
-        if components <4{
-            for j in data.to_vec(){
-                new_data.push(j);
-                for _z in components..4{
-                    new_data.push(0);
-                }
-            }
-        }
-        let mv = ::std::slice::from_raw_parts_mut(new_data.as_ptr() as *mut u8, new_data.len());
 
+        let mv = ::std::slice::from_raw_parts_mut(data.as_ptr() as *mut u8, data.len());
         self.ctx
             .tex_sub_image_2d_with_i32_and_i32_and_u32_and_type_and_opt_u8_array(
                 WebGL::TEXTURE_2D,
@@ -1520,15 +1509,6 @@ impl WebGLVisitor {
         check(&ctx)
     }
 }
-/*
-impl WebGLVisitor{
-    unsafe fn update_text_edit(&self,id:&str,style:CssStyleDeclaration){
-        if let Some(e) = self.text_edit_ctx.get_with_name(id){
-            e.dy
-        }
-    }
-}
-*/
 
 unsafe fn check(ctx: &WebGL) -> Result<()> {
     match ctx.get_error() {
