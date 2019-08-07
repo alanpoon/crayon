@@ -63,7 +63,7 @@ main!({
     );
 
     #[cfg(target_arch = "wasm32")]
-    let res = format!("http://localhost:8080/examples/resources/");
+    let res = format!("/examples/resources/");
 
     let mut params = Params::default();
     params.window.title = "CR: Cube".into();
