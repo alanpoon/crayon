@@ -86,7 +86,7 @@ main!({
     let size = (640, 128);
 
     #[cfg(target_arch = "wasm32")]
-    let res = format!("http://localhost:8080/examples/resources/");
+    let res = format!("/examples/resources/");
     #[cfg(target_arch = "wasm32")]
     let size = (256, 256);
 
