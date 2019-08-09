@@ -12,4 +12,4 @@ mkdir $SCRIPT_DIR/dist/examples
 cp -r $SCRIPT_DIR/../../examples/resources $SCRIPT_DIR/dist/examples
 cd $SCRIPT_DIR
 
-sudo npm run serve
+npm run serve
