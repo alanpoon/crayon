@@ -130,9 +130,15 @@ impl WebVisitor {
             let clone = events.clone();
             Closure::wrap(Box::new(move |v: KeyboardEvent| {
                 if let Some(key) = types::from_virtual_key_code(&v.key()) {
+                    info!("there is down");
                     v.prevent_default();
                     let evt = Event::InputDevice(InputEvent::KeyboardPressed { key });
                     clone.lock().unwrap().push(evt);
+                    let character_vec:Vec<char> = v.key().chars().collect();
+                let character = character_vec.get(0).unwrap().clone();
+                v.prevent_default();
+                let evt = Event::InputDevice(InputEvent::ReceivedCharacter { character });
+                 clone.lock().unwrap().push(evt);
                 }
             }) as Box<FnMut(_)>)
         };
@@ -144,6 +150,7 @@ impl WebVisitor {
         let on_key_up = {
             let clone = events.clone();
             Closure::wrap(Box::new(move |v: KeyboardEvent| {
+                
                 if let Some(key) = types::from_virtual_key_code(&v.key()) {
                     v.prevent_default();
                     let evt = Event::InputDevice(InputEvent::KeyboardReleased { key });
@@ -240,7 +247,6 @@ impl WebVisitor {
             on_focus: on_focus,
             on_lost_focus: on_lost_focus,
             on_resize: on_resize,
-            
         };
 
         let dpr = visitor.device_pixel_ratio();

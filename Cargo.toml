@@ -47,6 +47,7 @@ features = [
     'HtmlElement',
     'WebGlBuffer',
     'WebGl2RenderingContext',
+    'WebGlContextAttributes',
     'WebGlProgram',
     'WebGlShader',
     'WebGlUniformLocation',

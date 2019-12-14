@@ -5,7 +5,7 @@ use web_sys::{
     self, HtmlCanvasElement, WebGlBuffer, WebGlFramebuffer, WebGlProgram, WebGlRenderbuffer,
     WebGlShader, WebGlTexture, WebGlUniformLocation, WebGlVertexArrayObject,
 };
-
+use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::WebGl2RenderingContext as WebGL;
 
@@ -19,6 +19,17 @@ use super::super::utils::DataVec;
 use super::super::{UniformVar, Visitor};
 use super::capabilities::Capabilities;
 
+#[cfg(target_arch = "wasm32")]
+#[macro_export]
+macro_rules! console_log {
+    ($($t:tt)*) => (
+        #[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+        log(&format_args!($($t)*).to_string()))
+}
 #[derive(Debug, Clone)]
 struct GLSurfaceData {
     handle: SurfaceHandle,
@@ -144,19 +155,21 @@ impl WebGLVisitor {
     pub unsafe fn new() -> Result<Self> {
         let window = web_sys::window().expect("no global `window` exists");
         let document = window.document().expect("should have a document on window");
-
-        let ctx = document
+        let obj = js_sys::Object::new();
+        js_sys::Reflect::set(&obj, &"premultipliedAlpha".into(), &wasm_bindgen::JsValue::from_bool(false));
+        js_sys::Reflect::set(&obj, &"desynchronized".into(), &wasm_bindgen::JsValue::from_bool(false));
+        let mut ctx = document
             .get_element_by_id("canvas")
             .unwrap()
             .dyn_into::<HtmlCanvasElement>()
             .map_err(|_| ())
             .unwrap()
-            .get_context("webgl2")
+            .get_context_with_context_options("webgl2",&obj)
             .unwrap()
             .unwrap()
             .dyn_into::<WebGL>()
             .unwrap();
-
+        let ca = ctx.get_context_attributes();
         let mut state = WebGLState {
             render_state: RenderState::default(),
             scissor: SurfaceScissor::Disable,
